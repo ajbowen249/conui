@@ -1,13 +1,5 @@
 use async_trait::async_trait;
-use pancurses::{
-    ALL_MOUSE_EVENTS,
-    endwin,
-    getmouse,
-    initscr,
-    Input,
-    mousemask,
-    Window
-};
+use pancurses::*;
 
 #[cfg(test)]
 mod tests {
@@ -93,6 +85,14 @@ impl Form {
 
         window.keypad(true); // Set keypad mode
         mousemask(ALL_MOUSE_EVENTS, std::ptr::null_mut()); // Listen to all mouse events
+        let mut bg = COLOR_BLACK;
+        start_color();
+        if use_default_colors() == OK {
+            bg = -1;
+        }
+
+        init_pair(1, COLOR_RED, bg);
+        init_pair(2, COLOR_GREEN, bg);
     
         window.refresh();
 

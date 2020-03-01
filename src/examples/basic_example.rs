@@ -2,18 +2,7 @@ extern crate conui;
 
 use async_trait::async_trait;
 use conui::*;
-use pancurses::{
-    ALL_MOUSE_EVENTS,
-    endwin,
-    getmouse,
-    initscr,
-    init_pair,
-    Input,
-    mousemask,
-    Window,
-    COLOR_BLUE,
-    COLOR_RED,
-};
+use pancurses::*;
 
 struct Button {
     has_focus: bool,
@@ -61,9 +50,10 @@ impl Component for Button {
     }
 
     fn draw(&mut self, window: &Window) {
-        init_pair(0, COLOR_BLUE, COLOR_RED);
-        window.color_set(0);
+        window.color_set(1);
         window.mvprintw(4, 4, format!("Quit"));
+        window.color_set(2);
+        window.mvprintw(5, 4, format!("Quit"));
     }
 }
 
