@@ -5,6 +5,7 @@ use super::base_types::*;
 pub struct Form {
     components: Vec<Box<dyn Component>>,
     event_queue: Vec<Event>,
+    focus_index: Option<usize>,
 }
 
 impl Form {
@@ -12,6 +13,7 @@ impl Form {
         Form {
             components: vec![],
             event_queue: vec![],
+            focus_index: None,
         }
     }
 
@@ -28,14 +30,18 @@ impl Form {
 
         window.keypad(true); // Set keypad mode
         mousemask(ALL_MOUSE_EVENTS, std::ptr::null_mut()); // Listen to all mouse events
+        noecho();
+
         let mut bg = COLOR_BLACK;
         start_color();
         if use_default_colors() == OK {
             bg = -1;
         }
 
-        init_pair(1, COLOR_RED, bg);
-        init_pair(2, COLOR_GREEN, bg);
+        init_pair(1, COLOR_BLUE, bg);
+        init_pair(2, COLOR_WHITE, bg);
+
+        self.advance_focus().await;
 
         window.refresh();
 
@@ -70,6 +76,7 @@ impl Form {
 
                         match event.detail {
                             EventDetail::ActionEvent(FormAction::Exit) => quit = true,
+                            EventDetail::ActionEvent(FormAction::AdvanceFocus) => self.advance_focus().await,
                             _ => { },
                         }
                     }
@@ -84,5 +91,30 @@ impl Form {
     /// Add an event to the queue
     pub fn push_event(&mut self, event: Event) {
         self.event_queue.push(event);
+    }
+
+    async fn advance_focus(&mut self) {
+        let start_at = if let Some(index) = self.focus_index {
+            self.components[index].on_lost_focus().await;
+            index + 1
+        } else {
+            0
+        };
+
+        for i in start_at..self.components.len() {
+            if self.components[i].on_gained_focus().await {
+                self.focus_index = Some(i);
+                return;
+            }
+        }
+
+        for i in 0..start_at {
+            if self.components[i].on_gained_focus().await {
+                self.focus_index = Some(i);
+                return;
+            }
+        }
+
+        self.focus_index = None;
     }
 }
