@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use pancurses::*;
 
 /// Non input-related events
@@ -26,15 +25,14 @@ pub struct Event {
 }
 
 /// Represents a component that may live within the UI.
-#[async_trait]
 pub trait Component {
     /// Called for all controls in scope for every event that occurs.
-    async fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>);
+    fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>);
     /// Called when focus is given by the form.
     /// Return true of the component actually takes focus.
-    async fn on_gained_focus(&mut self) -> bool;
+    fn on_gained_focus(&mut self) -> bool;
     /// Called when focus is removed from the control by the form.
-    async fn on_lost_focus(&mut self);
+    fn on_lost_focus(&mut self);
     /// Called to give the control an opportunity to draw itself
     fn draw(&mut self, window: &Window);
 }
@@ -42,10 +40,9 @@ pub trait Component {
 /// Not meant to be used. Is here because the compiler wants at least one
 /// implementation of Component for dyn to work.
 pub struct ComponentStub { }
-#[async_trait]
 impl Component for ComponentStub {
-    async fn on_event(&mut self, _: &mut Event, _: &mut Vec<Event>) { }
-    async fn on_gained_focus(&mut self) -> bool { false }
-    async fn on_lost_focus(&mut self) { }
+    fn on_event(&mut self, _: &mut Event, _: &mut Vec<Event>) { }
+    fn on_gained_focus(&mut self) -> bool { false }
+    fn on_lost_focus(&mut self) { }
     fn draw(&mut self, _: &Window) { }
 }

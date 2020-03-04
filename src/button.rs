@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use pancurses::*;
 use super::base_types::*;
 use super::form::Form;
@@ -16,9 +15,8 @@ pub struct Button<F> {
     focus_bg_color: i16,
 }
 
-#[async_trait]
 impl<F> Component for Button<F> where F: Fn(&mut Vec<Event>) + Send {
-    async fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>) {
+    fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>) {
         if event.handled || !self.has_focus {
             return;
         }
@@ -46,12 +44,12 @@ impl<F> Component for Button<F> where F: Fn(&mut Vec<Event>) + Send {
         }
     }
 
-    async fn on_gained_focus(&mut self) -> bool {
+    fn on_gained_focus(&mut self) -> bool {
         self.has_focus = true;
         true
     }
 
-    async fn on_lost_focus(&mut self) {
+    fn on_lost_focus(&mut self) {
         self.has_focus = false;
     }
 

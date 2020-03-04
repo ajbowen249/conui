@@ -64,8 +64,8 @@ impl Form {
 
     /// Runs the main event loop. Blocks until a FormEvents::Exit event is
     /// processed.
-    pub async fn run_event_loop(&mut self) {
-        self.advance_focus().await;
+    pub fn run_event_loop(&mut self) {
+        self.advance_focus();
 
         self.window.refresh();
 
@@ -86,7 +86,7 @@ impl Form {
                 };
 
                 for component in self.components.iter_mut() {
-                    component.on_event(&mut event, &mut self.event_queue).await;
+                    component.on_event(&mut event, &mut self.event_queue);
                 }
             }
 
@@ -95,12 +95,12 @@ impl Form {
                 match self.event_queue.pop() {
                     Some(mut event) => {
                         for component in self.components.iter_mut() {
-                            component.on_event(&mut event, &mut self.event_queue).await;
+                            component.on_event(&mut event, &mut self.event_queue);
                         }
 
                         match event.detail {
                             EventDetail::ActionEvent(FormAction::Exit) => quit = true,
-                            EventDetail::ActionEvent(FormAction::AdvanceFocus) => self.advance_focus().await,
+                            EventDetail::ActionEvent(FormAction::AdvanceFocus) => self.advance_focus(),
                             _ => { },
                         }
                     }
@@ -117,23 +117,23 @@ impl Form {
         self.event_queue.push(event);
     }
 
-    async fn advance_focus(&mut self) {
+    fn advance_focus(&mut self) {
         let start_at = if let Some(index) = self.focus_index {
-            self.components[index].on_lost_focus().await;
+            self.components[index].on_lost_focus();
             index + 1
         } else {
             0
         };
 
         for i in start_at..self.components.len() {
-            if self.components[i].on_gained_focus().await {
+            if self.components[i].on_gained_focus() {
                 self.focus_index = Some(i);
                 return;
             }
         }
 
         for i in 0..start_at {
-            if self.components[i].on_gained_focus().await {
+            if self.components[i].on_gained_focus() {
                 self.focus_index = Some(i);
                 return;
             }

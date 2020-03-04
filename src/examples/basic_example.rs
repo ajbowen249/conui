@@ -2,8 +2,7 @@ extern crate conui;
 use conui::*;
 use pancurses::*;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let mut form = Form::new();
 
     form.push_component(Box::new(ButtonBuilder::new()
@@ -46,6 +45,5 @@ async fn main() {
         .build()
     ));
 
-
-    form.run_event_loop().await;
+    form.run_event_loop();
 }
