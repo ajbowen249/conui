@@ -6,3 +6,6 @@ pub use button::*;
 
 mod form;
 pub use form::*;
+
+mod text;
+pub use text::*;

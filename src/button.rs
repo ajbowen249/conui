@@ -15,7 +15,7 @@ pub struct Button<F> {
     focus_bg_color: i16,
 }
 
-impl<F> Component for Button<F> where F: Fn(&mut Vec<Event>) + Send {
+impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
     fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>) {
         if event.handled || !self.has_focus {
             return;
@@ -26,7 +26,7 @@ impl<F> Component for Button<F> where F: Fn(&mut Vec<Event>) + Send {
                 match input_event {
                     Input::Character('\n') => {
                         event.handled = true;
-                        if let Some(action) = &self.action {
+                        if let Some(action) = &mut self.action {
                             action(event_queue);
                         }
                     },
@@ -76,7 +76,7 @@ pub struct ButtonBuilder<F> {
     focus_bg_color: i16,
 }
 
-impl<F> ButtonBuilder<F> where F: Fn(&mut Vec<Event>) + Send {
+impl<F> ButtonBuilder<F> where F: FnMut(&mut Vec<Event>) {
     pub fn new() -> ButtonBuilder<F> {
         ButtonBuilder {
             action: None,

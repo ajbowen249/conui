@@ -1,4 +1,6 @@
 use pancurses::*;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 /// Non input-related events
 #[derive(Copy, Clone)]
@@ -45,4 +47,14 @@ impl Component for ComponentStub {
     fn on_gained_focus(&mut self) -> bool { false }
     fn on_lost_focus(&mut self) { }
     fn draw(&mut self, _: &Window) { }
+}
+
+/// Since interconnectedness of components can make it tough (or impossible) to
+/// build them up on the stack, Form primarily deals with them behind reference
+/// counted containers.
+pub type ComponentRef = Rc<RefCell<dyn Component>>;
+
+/// Creates a new component ref from a component (use with result of builder)
+pub fn new_component_ref<T>(component: T) -> Rc<RefCell<T>> where T: Component {
+    Rc::new(RefCell::<T>::new(component))
 }

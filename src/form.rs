@@ -4,7 +4,7 @@ use super::base_types::*;
 /// Manages a set of controls.
 pub struct Form {
     window: Window,
-    components: Vec<Box<dyn Component>>,
+    components: Vec<ComponentRef>,
     event_queue: Vec<Event>,
     focus_index: Option<usize>,
 }
@@ -58,7 +58,7 @@ impl Form {
 
     /// Adds a component to the stack.
     /// Note: Tab order is deduced from add order.
-    pub fn push_component(&mut self, component: Box<dyn Component>) {
+    pub fn push_component(&mut self, component: ComponentRef) {
         self.components.push(component);
     }
 
@@ -71,8 +71,10 @@ impl Form {
 
         let mut quit = false;
         while !quit {
+            self.window.clear();
+
             for component in self.components.iter_mut() {
-                component.draw(&self.window);
+                component.borrow_mut().draw(&self.window);
             }
 
             self.window.refresh();
@@ -86,7 +88,7 @@ impl Form {
                 };
 
                 for component in self.components.iter_mut() {
-                    component.on_event(&mut event, &mut self.event_queue);
+                    component.borrow_mut().on_event(&mut event, &mut self.event_queue);
                 }
             }
 
@@ -95,7 +97,7 @@ impl Form {
                 match self.event_queue.pop() {
                     Some(mut event) => {
                         for component in self.components.iter_mut() {
-                            component.on_event(&mut event, &mut self.event_queue);
+                            component.borrow_mut().on_event(&mut event, &mut self.event_queue);
                         }
 
                         match event.detail {
@@ -119,21 +121,21 @@ impl Form {
 
     fn advance_focus(&mut self) {
         let start_at = if let Some(index) = self.focus_index {
-            self.components[index].on_lost_focus();
+            self.components[index].borrow_mut().on_lost_focus();
             index + 1
         } else {
             0
         };
 
         for i in start_at..self.components.len() {
-            if self.components[i].on_gained_focus() {
+            if self.components[i].borrow_mut().on_gained_focus() {
                 self.focus_index = Some(i);
                 return;
             }
         }
 
         for i in 0..start_at {
-            if self.components[i].on_gained_focus() {
+            if self.components[i].borrow_mut().on_gained_focus() {
                 self.focus_index = Some(i);
                 return;
             }
