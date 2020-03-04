@@ -7,12 +7,12 @@ use std::cell::RefCell;
 fn main() {
     let mut form = Form::new();
 
-    let rc = new_component_ref(TextBuilder::new()
+    let count_label = new_component_ref(TextBuilder::new()
         .set_text("Count: 0")
         .set_position(12, 1)
         .build());
 
-    form.push_component(rc.clone());
+    form.push_component(count_label.clone());
 
     let count = Rc::new(RefCell::<i32>::new(0));
 
@@ -27,7 +27,7 @@ fn main() {
             let mut val = *count.borrow();
             val = val + 1;
             *count.borrow_mut() = val;
-            rc.borrow_mut().set_text(format!("Count: {}", val).as_str());
+            count_label.borrow_mut().set_text(format!("Count: {}", val).as_str());
         })
         .build()
     ));
