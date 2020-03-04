@@ -3,18 +3,57 @@ use super::base_types::*;
 
 /// Manages a set of controls.
 pub struct Form {
+    window: Window,
     components: Vec<Box<dyn Component>>,
     event_queue: Vec<Event>,
     focus_index: Option<usize>,
 }
 
 impl Form {
+    /// Creates the form and initializes the pancurses window
     pub fn new() -> Form {
+        let window = initscr();
+        window.keypad(true); // Set keypad mode
+        mousemask(ALL_MOUSE_EVENTS, std::ptr::null_mut()); // Listen to all mouse events
+        noecho();
+        curs_set(0);
+
+        Form::configure_colors();
+
         Form {
+            window: window,
             components: vec![],
             event_queue: vec![],
             focus_index: None,
         }
+    }
+
+    /// This may not be great long-term, but should work for now.
+    /// This generates a color palette where the eight base colors pair with
+    /// all foreground/background combos.
+    fn configure_colors() {
+        if !has_colors() {
+            panic!("This terminal is not supported (no color).");
+        }
+
+        start_color();
+        if COLOR_PAIRS() < 8 * 8 {
+            panic!("This terminal is not supported (not enough color pairs).");
+        }
+
+        // Colors run from range 0 (black) to 7 (white). Assign index 0-63 as
+        // all possible combinations.
+        for fg in 0..8 {
+            for bg in 0..8 {
+                init_pair(Form::color_index(fg, bg), fg, bg);
+            }
+        }
+    }
+
+    pub fn color_index(foreground: i16, background: i16) -> i16 {
+        let mut index: i16 = foreground << 3;
+        index |= background;
+        index
     }
 
     /// Adds a component to the stack.
@@ -26,35 +65,20 @@ impl Form {
     /// Runs the main event loop. Blocks until a FormEvents::Exit event is
     /// processed.
     pub async fn run_event_loop(&mut self) {
-        let window = initscr();
-
-        window.keypad(true); // Set keypad mode
-        mousemask(ALL_MOUSE_EVENTS, std::ptr::null_mut()); // Listen to all mouse events
-        noecho();
-
-        let mut bg = COLOR_BLACK;
-        start_color();
-        if use_default_colors() == OK {
-            bg = -1;
-        }
-
-        init_pair(1, COLOR_BLUE, bg);
-        init_pair(2, COLOR_WHITE, bg);
-
         self.advance_focus().await;
 
-        window.refresh();
+        self.window.refresh();
 
         let mut quit = false;
         while !quit {
             for component in self.components.iter_mut() {
-                component.draw(&window);
+                component.draw(&self.window);
             }
 
-            window.refresh();
+            self.window.refresh();
 
             // Handle input first
-            let input = window.getch();
+            let input = self.window.getch();
             if let Some(value) = input {
                 let mut event = Event {
                     detail: EventDetail::InputEvent(value),

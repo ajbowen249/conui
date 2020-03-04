@@ -1,6 +1,8 @@
 use async_trait::async_trait;
 use pancurses::*;
 use super::base_types::*;
+use super::form::Form;
+use std::iter::FromIterator;
 
 pub struct Button<F> {
     has_focus: bool,
@@ -8,6 +10,10 @@ pub struct Button<F> {
     label: String,
     x_pos: i32,
     y_pos: i32,
+    neutral_fg_color: i16,
+    focus_fg_color: i16,
+    neutral_bg_color: i16,
+    focus_bg_color: i16,
 }
 
 #[async_trait]
@@ -50,8 +56,14 @@ impl<F> Component for Button<F> where F: Fn(&mut Vec<Event>) + Send {
     }
 
     fn draw(&mut self, window: &Window) {
-        window.color_set(if self.has_focus { 1 } else { 2 });
-        window.mvprintw(self.y_pos, self.x_pos, format!("{}", self.label));
+        let fg_color = if self.has_focus { self.focus_fg_color } else { self.neutral_fg_color };
+        let bg_color = if self.has_focus { self.focus_bg_color } else { self.neutral_bg_color };
+        window.color_set(Form::color_index(fg_color, bg_color));
+
+        let horizontal_border = String::from_iter(vec!['─'; self.label.chars().count()]);
+        window.mvprintw(self.y_pos,     self.x_pos, format!("┌{}┐", horizontal_border));
+        window.mvprintw(self.y_pos + 1, self.x_pos, format!("│{}│", self.label));
+        window.mvprintw(self.y_pos + 2, self.x_pos, format!("└{}┘", horizontal_border));
     }
 }
 
@@ -60,6 +72,10 @@ pub struct ButtonBuilder<F> {
     label: String,
     x_pos: i32,
     y_pos: i32,
+    neutral_fg_color: i16,
+    focus_fg_color: i16,
+    neutral_bg_color: i16,
+    focus_bg_color: i16,
 }
 
 impl<F> ButtonBuilder<F> where F: Fn(&mut Vec<Event>) + Send {
@@ -69,6 +85,10 @@ impl<F> ButtonBuilder<F> where F: Fn(&mut Vec<Event>) + Send {
             label: String::new(),
             x_pos: 0,
             y_pos: 0,
+            neutral_fg_color: COLOR_WHITE,
+            focus_fg_color: COLOR_WHITE,
+            neutral_bg_color: COLOR_BLUE,
+            focus_bg_color: COLOR_RED,
         }
     }
 
@@ -88,6 +108,26 @@ impl<F> ButtonBuilder<F> where F: Fn(&mut Vec<Event>) + Send {
         self
     }
 
+    pub fn set_neutral_fg_color(mut self, neutral_fg_color: i16) -> ButtonBuilder<F> {
+        self.neutral_fg_color = neutral_fg_color;
+        self
+    }
+
+    pub fn set_focus_fg_color(mut self, focus_fg_color: i16) -> ButtonBuilder<F> {
+        self.focus_fg_color = focus_fg_color;
+        self
+    }
+
+    pub fn set_neutral_bg_color(mut self, neutral_bg_color: i16) -> ButtonBuilder<F> {
+        self.neutral_bg_color = neutral_bg_color;
+        self
+    }
+
+    pub fn set_focus_bg_color(mut self, focus_bg_color: i16) -> ButtonBuilder<F> {
+        self.focus_bg_color = focus_bg_color;
+        self
+    }
+
     pub fn build(self) -> Button<F> {
         Button {
             has_focus: false,
@@ -95,6 +135,10 @@ impl<F> ButtonBuilder<F> where F: Fn(&mut Vec<Event>) + Send {
             action: self.action,
             x_pos: self.x_pos,
             y_pos: self.y_pos,
+            neutral_fg_color: self.neutral_fg_color,
+            focus_fg_color: self.focus_fg_color,
+            neutral_bg_color: self.neutral_bg_color,
+            focus_bg_color: self.focus_bg_color,
         }
     }
 }

@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "basic_example (unix)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/examples/basic_example",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "lldb",
+            "preLaunchTask": "build examples"
+        },
+        {
             "name": "basic_example (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
@@ -15,6 +28,6 @@
             "environment": [],
             "externalConsole": true,
             "preLaunchTask": "build examples"
-        }
+        },
     ]
 }
