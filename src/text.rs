@@ -1,12 +1,17 @@
 use pancurses::*;
 use super::base_types::*;
+use super::utils::TextBinder;
 use super::form::Form;
 use std::rc::Rc;
 use std::cell::RefCell;
 
 /// A block of text in the UI
+/// When building, use TextBuilder::set_text to set immutable text.
+/// For dynamic text action, set a TextBinder via TextBuilder::set_text_binder,
+/// which will allow text to be mutated later on.
 pub struct Text {
     text: String,
+    text_binder: Option<TextBinder>,
     x_pos: i32,
     y_pos: i32,
     fg_color: i16,
@@ -21,20 +26,23 @@ impl Component for Text {
 
     fn draw(&mut self, window: &Window) {
         window.color_set(Form::color_index(self.fg_color, self.bg_color));
-        window.mvprintw(self.y_pos, self.x_pos, format!("{}", self.text));
+        window.mvprintw(self.y_pos, self.x_pos, format!("{}", self.get_actual_text()));
     }
 }
 
 impl Text {
-    /// Changes the text in the text block
-    pub fn set_text(&mut self, text: &str) {
-        self.text = String::from(text);
+    fn get_actual_text(&self) -> String {
+        match &self.text_binder {
+            Some(binder) => binder.get(),
+            None => self.text.clone(),
+        }
     }
 }
 
 /// Builder for a Text component
 pub struct TextBuilder {
     text: String,
+    text_binder: Option<TextBinder>,
     x_pos: i32,
     y_pos: i32,
     fg_color: i16,
@@ -46,6 +54,7 @@ impl TextBuilder {
     pub fn new() -> TextBuilder {
         TextBuilder {
             text: String::new(),
+            text_binder: None,
             x_pos: 0,
             y_pos: 0,
             fg_color: COLOR_WHITE,
@@ -56,6 +65,13 @@ impl TextBuilder {
     /// Set the displayed text
     pub fn set_text(mut self, text: &str) -> TextBuilder {
         self.text = String::from(text);
+        self
+    }
+
+    /// Allow text to be set via a TextBinder
+    /// Note: Setting this will override anything set by set_text
+    pub fn set_text_binder(mut self, binder: TextBinder) -> TextBuilder {
+        self.text_binder = Some(binder);
         self
     }
 
@@ -82,6 +98,7 @@ impl TextBuilder {
     pub fn build(self) -> Rc<RefCell<Text>> {
         new_component_ref(Text {
             text: self.text,
+            text_binder: self.text_binder,
             x_pos: self.x_pos,
             y_pos: self.y_pos,
             fg_color: self.fg_color,

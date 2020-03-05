@@ -5,16 +5,14 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 fn main() {
-    let mut form = Form::new();
-
-    let count_label = TextBuilder::new()
-        .set_text("Count: 0")
-        .set_position(12, 1)
-        .build();
-
-    form.push_component(count_label.clone());
-
     let count = Rc::new(RefCell::<i32>::new(0));
+    let mut count_text = TextBinder::new("Count: 0");
+
+    let mut form = Form::new();
+    form.push_component(TextBuilder::new()
+        .set_text_binder(count_text.clone())
+        .set_position(12, 1)
+        .build());
 
     form.push_component(ButtonBuilder::new()
         .set_label("Increment")
@@ -27,7 +25,7 @@ fn main() {
             let mut val = *count.borrow();
             val = val + 1;
             *count.borrow_mut() = val;
-            count_label.borrow_mut().set_text(format!("Count: {}", val).as_str());
+            count_text.set(format!("Count: {}", val).as_str());
         })
         .build()
     );
