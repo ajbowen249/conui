@@ -1,6 +1,7 @@
 use pancurses::*;
 use super::base_types::*;
 use super::form::Form;
+use super::utils::*;
 use std::iter::FromIterator;
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -20,7 +21,7 @@ pub struct Button<F> {
 
 impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
     fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>) {
-        if event.handled || !self.has_focus {
+        if event.handled {
             return;
         }
 
@@ -28,9 +29,26 @@ impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
             EventDetail::InputEvent(input_event) => {
                 match input_event {
                     Input::Character('\n') => {
+                        if !self.has_focus {
+                            return;
+                        }
                         event.handled = true;
-                        if let Some(action) = &mut self.action {
-                            action(event_queue);
+                        self.maybe_execute_action(event_queue);
+                    },
+                    Input::KeyMouse => {
+                        if let Ok(mouse_event) = getmouse() {
+                            if is_in_window(
+                                self.x_pos,
+                                self.y_pos,
+                                self.get_width(),
+                                self.get_height(),
+                                mouse_event.x,
+                                mouse_event.y
+                            ) {
+                                // Focus does not matter since it was a direct click.
+                                event.handled = true;
+                                self.maybe_execute_action(event_queue);
+                            }
                         }
                     },
                     Input::Character('\t') => {
@@ -65,6 +83,22 @@ impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
         window.mvprintw(self.y_pos,     self.x_pos, format!("┌{}┐", horizontal_border));
         window.mvprintw(self.y_pos + 1, self.x_pos, format!("│{}│", self.label));
         window.mvprintw(self.y_pos + 2, self.x_pos, format!("└{}┘", horizontal_border));
+    }
+}
+
+impl<F> Button<F> where F: FnMut(&mut Vec<Event>) {
+    fn maybe_execute_action(&mut self, event_queue: &mut Vec<Event>) {
+        if let Some(action) = &mut self.action {
+            action(event_queue);
+        }
+    }
+
+    fn get_width(&self) -> u32 {
+        self.label.chars().count() as u32 + 2
+    }
+
+    fn get_height(&self) -> u32 {
+        3
     }
 }
 
