@@ -54,7 +54,7 @@ impl Component for ComponentStub {
 /// counted containers.
 pub type ComponentRef = Rc<RefCell<dyn Component>>;
 
-/// Creates a new component ref from a component (use with result of builder)
+/// Creates a new component ref from a component
 pub fn new_component_ref<T>(component: T) -> Rc<RefCell<T>> where T: Component {
     Rc::new(RefCell::<T>::new(component))
 }

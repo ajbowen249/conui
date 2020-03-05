@@ -7,16 +7,16 @@ use std::cell::RefCell;
 fn main() {
     let mut form = Form::new();
 
-    let count_label = new_component_ref(TextBuilder::new()
+    let count_label = TextBuilder::new()
         .set_text("Count: 0")
         .set_position(12, 1)
-        .build());
+        .build();
 
     form.push_component(count_label.clone());
 
     let count = Rc::new(RefCell::<i32>::new(0));
 
-    form.push_component(new_component_ref(ButtonBuilder::new()
+    form.push_component(ButtonBuilder::new()
         .set_label("Increment")
         .set_position(0, 0)
         .set_neutral_bg_color(COLOR_BLACK)
@@ -30,9 +30,9 @@ fn main() {
             count_label.borrow_mut().set_text(format!("Count: {}", val).as_str());
         })
         .build()
-    ));
+    );
 
-    form.push_component(new_component_ref(ButtonBuilder::new()
+    form.push_component(ButtonBuilder::new()
         .set_label("Quit")
         .set_position(0, 4)
         .set_action(|q| {
@@ -42,7 +42,7 @@ fn main() {
             });
         })
         .build()
-    ));
+    );
 
     form.run_event_loop();
 }

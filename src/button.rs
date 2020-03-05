@@ -2,7 +2,10 @@ use pancurses::*;
 use super::base_types::*;
 use super::form::Form;
 use std::iter::FromIterator;
+use std::rc::Rc;
+use std::cell::RefCell;
 
+/// A Button within the UI
 pub struct Button<F> {
     has_focus: bool,
     action: Option<F>,
@@ -65,6 +68,7 @@ impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
     }
 }
 
+/// Builder for a Button component
 pub struct ButtonBuilder<F> {
     action: Option<F>,
     label: String,
@@ -77,6 +81,7 @@ pub struct ButtonBuilder<F> {
 }
 
 impl<F> ButtonBuilder<F> where F: FnMut(&mut Vec<Event>) {
+    /// Create a new ButtonBuilder with default data
     pub fn new() -> ButtonBuilder<F> {
         ButtonBuilder {
             action: None,
@@ -90,44 +95,52 @@ impl<F> ButtonBuilder<F> where F: FnMut(&mut Vec<Event>) {
         }
     }
 
+    /// Assign a callback to run when the button is activated
     pub fn set_action(mut self, f: F) -> ButtonBuilder<F> {
         self.action = Some(f);
         self
     }
 
+    /// Set the text within the button
     pub fn set_label(mut self, label: &str) -> ButtonBuilder<F> {
         self.label = String::from(label);
         self
     }
 
+    /// Set the button's placement within the UI
     pub fn set_position(mut self, x_pos: i32, y_pos: i32) -> ButtonBuilder<F> {
         self.x_pos = x_pos;
         self.y_pos = y_pos;
         self
     }
 
+    /// Set the color of the text and border when not in focus
     pub fn set_neutral_fg_color(mut self, neutral_fg_color: i16) -> ButtonBuilder<F> {
         self.neutral_fg_color = neutral_fg_color;
         self
     }
 
+    /// Set the color of the text and border when focused
     pub fn set_focus_fg_color(mut self, focus_fg_color: i16) -> ButtonBuilder<F> {
         self.focus_fg_color = focus_fg_color;
         self
     }
 
+    /// Set the background color when not in focus
     pub fn set_neutral_bg_color(mut self, neutral_bg_color: i16) -> ButtonBuilder<F> {
         self.neutral_bg_color = neutral_bg_color;
         self
     }
 
+    /// Set the background color when focused
     pub fn set_focus_bg_color(mut self, focus_bg_color: i16) -> ButtonBuilder<F> {
         self.focus_bg_color = focus_bg_color;
         self
     }
 
-    pub fn build(self) -> Button<F> {
-        Button {
+    /// Builds the button component with set options
+    pub fn build(self) -> Rc<RefCell<Button<F>>> {
+        new_component_ref(Button {
             has_focus: false,
             label: self.label,
             action: self.action,
@@ -137,6 +150,6 @@ impl<F> ButtonBuilder<F> where F: FnMut(&mut Vec<Event>) {
             focus_fg_color: self.focus_fg_color,
             neutral_bg_color: self.neutral_bg_color,
             focus_bg_color: self.focus_bg_color,
-        }
+        })
     }
 }

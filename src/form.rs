@@ -50,6 +50,7 @@ impl Form {
         }
     }
 
+    /// Given a foreground and background color, get the color pair index
     pub fn color_index(foreground: i16, background: i16) -> i16 {
         let mut index: i16 = foreground << 3;
         index |= background;
