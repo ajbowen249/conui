@@ -39,16 +39,6 @@ pub trait Component {
     fn draw(&mut self, window: &Window);
 }
 
-/// Not meant to be used. Is here because the compiler wants at least one
-/// implementation of Component for dyn to work.
-pub struct ComponentStub { }
-impl Component for ComponentStub {
-    fn on_event(&mut self, _: &mut Event, _: &mut Vec<Event>) { }
-    fn on_gained_focus(&mut self) -> bool { false }
-    fn on_lost_focus(&mut self) { }
-    fn draw(&mut self, _: &Window) { }
-}
-
 /// Since interconnectedness of components can make it tough (or impossible) to
 /// build them up on the stack, Form primarily deals with them behind reference
 /// counted containers.
