@@ -26,10 +26,36 @@ pub struct Event {
     pub handled: bool,
 }
 
+/// Context passed around to components to effect further actions within the UI
+pub struct EventQueue {
+    event_queue: Vec<Event>,
+}
+
+impl EventQueue {
+    pub fn new() -> EventQueue {
+        EventQueue {
+            event_queue: vec![],
+        }
+    }
+
+    /// Adds an event to the end of the queue
+    pub fn dispatch_event(&mut self, event: EventDetail) {
+        self.event_queue.push(Event {
+            detail: event,
+            handled: false,
+        });
+    }
+
+    /// Removes a single event from the queue. Returns None if empty.
+    pub fn pop(&mut self) -> Option<Event> {
+        self.event_queue.pop()
+    }
+}
+
 /// Represents a component that may live within the UI.
 pub trait Component {
     /// Called for all controls in scope for every event that occurs.
-    fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>);
+    fn on_event(&mut self, event: &mut Event, event_queue: &mut EventQueue);
     /// Called when focus is given by the form.
     /// Return true of the component actually takes focus.
     fn on_gained_focus(&mut self) -> bool;

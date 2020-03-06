@@ -20,7 +20,7 @@ pub struct Text {
 
 impl Component for Text {
     // Text does not care about events or focus. It's just somet text.
-    fn on_event(&mut self, _: &mut Event, _: &mut Vec<Event>) { }
+    fn on_event(&mut self, _: &mut Event, _: &mut EventQueue) { }
     fn on_gained_focus(&mut self) -> bool { false }
     fn on_lost_focus(&mut self) { }
 

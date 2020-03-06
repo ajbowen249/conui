@@ -34,10 +34,7 @@ fn main() {
         .set_label("Quit")
         .set_position(0, 4)
         .set_action(|q| {
-            q.push(Event {
-                detail: EventDetail::ActionEvent(FormAction::Exit),
-                handled: false
-            });
+            q.dispatch_event(EventDetail::ActionEvent(FormAction::Exit));
         })
         .build()
     );

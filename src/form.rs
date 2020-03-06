@@ -5,7 +5,7 @@ use super::base_types::*;
 pub struct Form {
     window: Window,
     components: Vec<ComponentRef>,
-    event_queue: Vec<Event>,
+    event_queue: EventQueue,
     focus_index: Option<usize>,
 }
 
@@ -23,7 +23,7 @@ impl Form {
         Form {
             window: window,
             components: vec![],
-            event_queue: vec![],
+            event_queue: EventQueue::new(),
             focus_index: None,
         }
     }
@@ -113,11 +113,6 @@ impl Form {
         }
 
         endwin();
-    }
-
-    /// Add an event to the queue
-    pub fn push_event(&mut self, event: Event) {
-        self.event_queue.push(event);
     }
 
     fn advance_focus(&mut self) {

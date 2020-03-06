@@ -19,8 +19,8 @@ pub struct Button<F> {
     focus_bg_color: i16,
 }
 
-impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
-    fn on_event(&mut self, event: &mut Event, event_queue: &mut Vec<Event>) {
+impl<F> Component for Button<F> where F: FnMut(&mut EventQueue) {
+    fn on_event(&mut self, event: &mut Event, event_queue: &mut EventQueue) {
         if event.handled {
             return;
         }
@@ -53,10 +53,7 @@ impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
                     },
                     Input::Character('\t') => {
                         event.handled = true;
-                        event_queue.push(Event {
-                            detail: EventDetail::ActionEvent(FormAction::AdvanceFocus),
-                            handled: false
-                        });
+                        event_queue.dispatch_event(EventDetail::ActionEvent(FormAction::AdvanceFocus));
                     },
                     _ => { },
                 }
@@ -86,8 +83,8 @@ impl<F> Component for Button<F> where F: FnMut(&mut Vec<Event>) {
     }
 }
 
-impl<F> Button<F> where F: FnMut(&mut Vec<Event>) {
-    fn maybe_execute_action(&mut self, event_queue: &mut Vec<Event>) {
+impl<F> Button<F> where F: FnMut(&mut EventQueue) {
+    fn maybe_execute_action(&mut self, event_queue: &mut EventQueue) {
         if let Some(action) = &mut self.action {
             action(event_queue);
         }
@@ -114,7 +111,7 @@ pub struct ButtonBuilder<F> {
     focus_bg_color: i16,
 }
 
-impl<F> ButtonBuilder<F> where F: FnMut(&mut Vec<Event>) {
+impl<F> ButtonBuilder<F> where F: FnMut(&mut EventQueue) {
     /// Create a new ButtonBuilder with default data
     pub fn new() -> ButtonBuilder<F> {
         ButtonBuilder {
