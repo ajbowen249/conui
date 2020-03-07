@@ -52,6 +52,9 @@ impl<F> Component for Button<F> where F: FnMut(&mut EventQueue) {
                         }
                     },
                     Input::Character('\t') => {
+                        if !self.has_focus {
+                            return;
+                        }
                         event.handled = true;
                         event_queue.dispatch_event(EventDetail::ActionEvent(FormAction::AdvanceFocus));
                     },
