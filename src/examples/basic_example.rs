@@ -7,6 +7,7 @@ use std::cell::RefCell;
 fn main() {
     let count = Rc::new(RefCell::<i32>::new(0));
     let mut count_text = TextBinder::new("Count: 0");
+    let input_text = TextBinder::new("");
 
     let mut form = Form::new();
     form.push_component(TextBuilder::new()
@@ -30,9 +31,17 @@ fn main() {
         .build()
     );
 
+    form.push_component(TextInputBuilder::new()
+        .set_label("Text Input")
+        .set_box_width(20)
+        .set_position(0, 4)
+        .set_text_binder(input_text)
+        .build()
+    );
+
     form.push_component(ButtonBuilder::new()
         .set_label("Quit")
-        .set_position(0, 4)
+        .set_position(0, 8)
         .set_action(|q| {
             q.dispatch_event(EventDetail::ActionEvent(FormAction::Exit));
         })

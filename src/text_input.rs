@@ -43,6 +43,16 @@ impl Component for TextInput {
                             }
                         }
                     },
+                    Input::KeyBackspace => {
+                        if !self.has_focus {
+                            return;
+                        }
+
+                        let mut text = self.text_binder.get();
+                        text.pop();
+                        self.text_binder.set(text.as_str());
+                        event.handled = true;
+                    },
                     Input::Character('\t') => {
                         if !self.has_focus {
                             return;
@@ -56,7 +66,14 @@ impl Component for TextInput {
                         }
                         event.handled = true;
                         let mut text = self.text_binder.get();
-                        text.push(ch);
+
+                        // Backspace comes in as a character in some shells
+                        if ch == '\u{7f}' {
+                            text.pop();
+                        } else {
+                            text.push(ch);
+                        }
+
                         self.text_binder.set(text.as_str());
                     },
                     _ => { },
@@ -80,16 +97,51 @@ impl Component for TextInput {
         let bg_color = if self.has_focus { self.focus_bg_color } else { self.neutral_bg_color };
         window.color_set(Form::color_index(fg_color, bg_color));
 
-        let horizontal_border = String::from_iter(vec!['─'; self.label.chars().count()]);
-        window.mvprintw(self.y_pos,     self.x_pos, format!("┌{}┐", horizontal_border));
-        window.mvprintw(self.y_pos + 1, self.x_pos, format!("│{}│", self.label));
-        window.mvprintw(self.y_pos + 2, self.x_pos, format!("└{}┘", horizontal_border));
+        let self_width = self.get_width();
+
+        let top_bottom_border = String::from_iter(vec!['─'; self_width as usize]);
+        let label_length = self.label.chars().count();
+
+        if label_length == 0 {
+            window.mvprintw(self.y_pos, self.x_pos, format!("┌{}┐", top_bottom_border));
+        } else {
+            let padding_needed = self_width as i32 - label_length as i32;
+            let top_padding = if padding_needed > 0 {
+                String::from_iter(vec!['═'; padding_needed as usize])
+            } else {
+                String::new()
+            };
+
+            window.mvprintw(self.y_pos, self.x_pos, format!("╒{}{}╕", self.label, top_padding));
+        }
+
+        let self_text = self.get_text();
+        let text_length = self_text.chars().count() as u32;
+        if text_length == self_width {
+            window.mvprintw(self.y_pos + 1, self.x_pos, format!("│{}│", self_text));
+        } else if text_length < self_width {
+            let padding_needed = self_width as i32 - text_length as i32;
+            let padding = String::from_iter(vec![' '; padding_needed as usize]);
+            window.mvprintw(self.y_pos + 1, self.x_pos, format!("│{}{}│", self_text, padding));
+        } else {
+            let text_slice = if self.has_focus {
+                let start_index = self_text.char_indices().nth((text_length - self_width) as usize).unwrap().0;
+                &self_text[start_index..]
+            } else {
+                let end_index = self_text.char_indices().nth(self_width as usize).unwrap().0;
+                &self_text[..end_index]
+            };
+
+            window.mvprintw(self.y_pos + 1, self.x_pos, format!("│{}│", text_slice));
+        }
+
+        window.mvprintw(self.y_pos + 2, self.x_pos, format!("└{}┘", top_bottom_border));
     }
 }
 
 impl TextInput {
     fn get_width(&self) -> u32 {
-        self.box_width + 2
+        self.box_width
     }
 
     fn get_height(&self) -> u32 {
@@ -128,6 +180,12 @@ impl TextInputBuilder {
             neutral_bg_color: COLOR_BLUE,
             focus_bg_color: COLOR_RED,
         }
+    }
+
+    /// Set the label for the box
+    pub fn set_label(mut self, label: &str) -> TextInputBuilder {
+        self.label = String::from(label);
+        self
     }
 
     /// Allow text to be read via a TextBinder
