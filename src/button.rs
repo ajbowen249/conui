@@ -8,6 +8,7 @@ use std::cell::RefCell;
 
 /// A Button within the UI
 pub struct Button<F> {
+    name: String,
     has_focus: bool,
     action: Option<F>,
     label: String,
@@ -20,6 +21,8 @@ pub struct Button<F> {
 }
 
 impl<F> Component for Button<F> where F: FnMut(&mut EventQueue) {
+    fn get_name(&self) -> &String { &self.name }
+
     fn on_event(&mut self, event: &mut Event, event_queue: &mut EventQueue) {
         if event.handled {
             return;
@@ -104,6 +107,7 @@ impl<F> Button<F> where F: FnMut(&mut EventQueue) {
 
 /// Builder for a Button component
 pub struct ButtonBuilder<F> {
+    name: String,
     action: Option<F>,
     label: String,
     x_pos: i32,
@@ -116,8 +120,9 @@ pub struct ButtonBuilder<F> {
 
 impl<F> ButtonBuilder<F> where F: FnMut(&mut EventQueue) {
     /// Create a new ButtonBuilder with default data
-    pub fn new() -> ButtonBuilder<F> {
+    pub fn new(name: &String) -> ButtonBuilder<F> {
         ButtonBuilder {
+            name: name.to_string(),
             action: None,
             label: String::new(),
             x_pos: 0,
@@ -176,6 +181,7 @@ impl<F> ButtonBuilder<F> where F: FnMut(&mut EventQueue) {
     pub fn build(self) -> Rc<RefCell<Button<F>>> {
         new_component_ref(Button {
             has_focus: false,
+            name: self.name,
             label: self.label,
             action: self.action,
             x_pos: self.x_pos,

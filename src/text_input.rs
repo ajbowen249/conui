@@ -8,6 +8,7 @@ use std::cell::RefCell;
 
 /// An Input within the UI
 pub struct TextInput {
+    name: String,
     has_focus: bool,
     label: String,
     text_binder: TextBinder,
@@ -21,6 +22,8 @@ pub struct TextInput {
 }
 
 impl Component for TextInput {
+    fn get_name(&self) -> &String { &self.name }
+
     fn on_event(&mut self, event: &mut Event, event_queue: &mut EventQueue) {
         if event.handled {
             return;
@@ -155,6 +158,7 @@ impl TextInput {
 
 /// Builder for an input component
 pub struct TextInputBuilder {
+    name: String,
     label: String,
     text_binder: TextBinder,
     x_pos: i32,
@@ -168,8 +172,9 @@ pub struct TextInputBuilder {
 
 impl TextInputBuilder {
     /// Create a new TextInputBuilder with default data
-    pub fn new() -> TextInputBuilder {
+    pub fn new(name: &String) -> TextInputBuilder {
         TextInputBuilder {
+            name: name.to_string(),
             label: String::new(),
             text_binder: TextBinder::new(""),
             x_pos: 0,
@@ -234,6 +239,7 @@ impl TextInputBuilder {
     pub fn build(self) -> Rc<RefCell<TextInput>> {
         new_component_ref(TextInput {
             has_focus: false,
+            name: self.name,
             label: self.label,
             text_binder: self.text_binder,
             x_pos: self.x_pos,

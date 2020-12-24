@@ -10,6 +10,7 @@ use std::cell::RefCell;
 /// For dynamic text action, set a TextBinder via TextBuilder::set_text_binder,
 /// which will allow text to be mutated later on.
 pub struct Text {
+    name: String,
     text: String,
     text_binder: Option<TextBinder>,
     x_pos: i32,
@@ -20,6 +21,7 @@ pub struct Text {
 
 impl Component for Text {
     // Text does not care about events or focus. It's just somet text.
+    fn get_name(&self) -> &String { &self.name }
     fn on_event(&mut self, _: &mut Event, _: &mut EventQueue) { }
     fn on_gained_focus(&mut self) -> bool { false }
     fn on_lost_focus(&mut self) { }
@@ -41,6 +43,7 @@ impl Text {
 
 /// Builder for a Text component
 pub struct TextBuilder {
+    name: String,
     text: String,
     text_binder: Option<TextBinder>,
     x_pos: i32,
@@ -51,8 +54,9 @@ pub struct TextBuilder {
 
 impl TextBuilder {
     /// Creates a new TextBuilder with default options
-    pub fn new() -> TextBuilder {
+    pub fn new(name: &String) -> TextBuilder {
         TextBuilder {
+            name: name.to_string(),
             text: String::new(),
             text_binder: None,
             x_pos: 0,
@@ -97,6 +101,7 @@ impl TextBuilder {
     /// Builds the Text component with assigned options
     pub fn build(self) -> Rc<RefCell<Text>> {
         new_component_ref(Text {
+            name: self.name,
             text: self.text,
             text_binder: self.text_binder,
             x_pos: self.x_pos,

@@ -54,13 +54,19 @@ impl EventQueue {
 
 /// Represents a component that may live within the UI.
 pub trait Component {
+    /// Gets the name of a component
+    fn get_name(&self) -> &String;
+
     /// Called for all controls in scope for every event that occurs.
     fn on_event(&mut self, event: &mut Event, event_queue: &mut EventQueue);
+
     /// Called when focus is given by the form.
-    /// Return true of the component actually takes focus.
+    /// Returns true of the component actually takes focus.
     fn on_gained_focus(&mut self) -> bool;
+
     /// Called when focus is removed from the control by the form.
     fn on_lost_focus(&mut self);
+
     /// Called to give the control an opportunity to draw itself
     fn draw(&mut self, window: &Window);
 }
