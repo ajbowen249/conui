@@ -42,7 +42,9 @@ impl Component for TextInput {
                                 mouse_event.x,
                                 mouse_event.y
                             ) {
-                                // TODO: Request focus
+                                event.handled = true;
+                                let n = self.name.clone();
+                                event_queue.dispatch_event(EventDetail::ActionEvent(FormAction::RequestFocus(n)));
                             }
                         }
                     },

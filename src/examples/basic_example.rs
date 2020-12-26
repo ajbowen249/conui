@@ -10,12 +10,12 @@ fn main() {
     let input_text = TextBinder::new("");
 
     let mut form = Form::new();
-    form.push_component(TextBuilder::new("count_txt")
+    form.push_component(TextBuilder::new(&String::from("count_txt"))
         .set_text_binder(count_text.clone())
         .set_position(12, 1)
         .build());
 
-    form.push_component(ButtonBuilder::new("incr_btn")
+    form.push_component(ButtonBuilder::new(&String::from("incr_btn"))
         .set_label("Increment")
         .set_position(0, 0)
         .set_neutral_bg_color(COLOR_BLACK)
@@ -31,7 +31,7 @@ fn main() {
         .build()
     );
 
-    form.push_component(TextInputBuilder::new("input")
+    form.push_component(TextInputBuilder::new(&String::from("input"))
         .set_label("Text Input")
         .set_box_width(20)
         .set_position(0, 4)
@@ -39,7 +39,7 @@ fn main() {
         .build()
     );
 
-    form.push_component(ButtonBuilder::new("quit_btn")
+    form.push_component(ButtonBuilder::new(&String::from("quit_btn"))
         .set_label("Quit")
         .set_position(0, 8)
         .set_action(|q| {

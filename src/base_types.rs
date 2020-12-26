@@ -3,10 +3,10 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 /// Non input-related events
-#[derive(Copy, Clone)]
 pub enum FormAction {
     Init,
     AdvanceFocus,
+    RequestFocus(String),
     Exit,
 }
 

@@ -104,6 +104,7 @@ impl Form {
                         match event.detail {
                             EventDetail::ActionEvent(FormAction::Exit) => quit = true,
                             EventDetail::ActionEvent(FormAction::AdvanceFocus) => self.advance_focus(),
+                            EventDetail::ActionEvent(FormAction::RequestFocus(name)) => self.focus_component(name),
                             _ => { },
                         }
                     }
@@ -138,5 +139,21 @@ impl Form {
         }
 
         self.focus_index = None;
+    }
+
+    fn focus_component(&mut self, name: String) {
+        match self.focus_index {
+            Some(i) => self.components[i].borrow_mut().on_lost_focus(),
+            _ => {},
+        }
+
+        for i in 0..self.components.len() {
+            let mut c = self.components[i].borrow_mut();
+            let n = c.get_name();
+            if n.eq(&name) && c.on_gained_focus() {
+                self.focus_index = Some(i);
+                return;
+            }
+        }
     }
 }
